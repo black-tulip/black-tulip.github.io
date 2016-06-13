@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>Water and Political Unrest in India</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+    <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script> 
+    <script src="libs/noUiSlider.8.5.1/nouislider.min.js"></script>
+    
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+    <link href='libs/noUiSlider.8.5.1/nouislider.min.css' rel='stylesheet' />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
+    <style>
+
+        
+        body {
+          margin:0;
+          padding:0;
+          font-family: "Open Sans", sans-serif;
+          color: '#6B0000'
+        }
+        h1 {
+            color: #850000;
+            background: whitesmoke;
+            margin: 0;
+            padding: 8px 25px 8px 15px;
+            text-align: center
+        }
+        h2 {
+            padding: 8px 25px 8px 15px;
+            color: #850000;
+            font-weight: 500;
+            font-size: 1em;
+            text-align: center;
+            background: whitesmoke;
+            border-bottom-style: ridge;
+            margin: 0
+        }
+        h3 {
+            color: whitesmoke;
+            background: #00233D;
+        }
+        #map {
+          position:absolute;
+          top:0;
+          bottom:0;
+          left:0;
+          width: 100%;
+        }
+        #ui-slider {
+            width: 25%;
+            position: absolute;
+            right:  50%;
+            bottom: 60px;
+        }
+        #legend {
+            position: absolute;
+            align-items: center;
+            bottom: 25px;
+            border-radius: 5px; 
+            color: white;
+            right: 25.5%;
+            width: 9%;
+            opacity: .75
+            
+        }
+        #legend h3 {
+            text-align: right;
+            font-weight: 500;
+            color: whitesmoke;
+            border-radius: 5px;
+        }
+        #info {
+            padding: 8px 15ps;
+            position: absolute;
+            text-align: center;
+            max-width: 300px;
+            right: 15px;
+            top: 15px;
+            display: none;
+            background: whitesmoke;
+            border: 1px #d3d3d3;
+            padding: 2px 6px;
+            border-radius: 5px;
+            opacity: .75;
+        }
+        #info p {
+            margin: 3px 0 4px;
+            font-size: .7em;
+            text-shadow: 1px 1px grey;
+        }
+        #info span:last-child {
+            font-size: 1.3em;
+            font-weight: 500;
+            color: #191B28;
+        }
+        .bullet {
+            border-radius: 5px;
+            height: 50px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 2px 2px black;
+        }
+        #event-start{
+            width: 20%;
+            position: absolute;
+            color: whitesmoke;
+            left: 23%;
+            bottom: 25px;
+        }
+        #event-end {
+            width: 20%;
+            position: absolute;
+            color: whitesmoke;
+            right: 48%;
+            bottom: 25px;
+            text-align: right
+        }
+        .noUi-connect {
+            background: #00233D
+        }
+        .noUi-handle {
+            background: grey;
+        }
+        #side-panel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 25%;
+            color: whitesmoke;
+            background: #00233D;
+            border-left: 3px solid whitesmoke;
+            overflow-y: scroll;
+            opacity: .8
+        }
+        #side-panel p {
+            margin: 8px 0 4px; 
+            padding: 0 25px 0 15px;
+            color: whitesmoke;
+            text-align: left;
+            font-size: 1em;
+        }
+        #side-panel p:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        #side-panel img {
+            float: right;
+            margin: 0 0 15px 15px;
+            width: 90%;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id='map'></div>
+    <div id='side-panel'>
+        <h1>Water &amp; Politics in India</h1>
+        <h2><strong>CONFLICT DATA OVER WATER SCARCITY 2015-2016</strong></h2>
+        
+        <p>Two weak monsoons and the ever increasing H20 demands of a vibrant developing economy have left India facing it's most severe water crisis in recent memory. According the <cite>The Economist</cite> 330 million people are facing acute water shortages. That is a number equal to the entire population of the United States.<br/><br/></p>
+        <p>The impact ranges from local governments unable to provide potable water to power plants forced to shut down because the rivers that provide cooling are no longer flowing. As this critical resource dries up, increased competition breeds conflict between residents, farmers, industry, local governments, and other communities.<br/><br/></p>
+        <p>Water is a renewable resource, so proper water management policies can and hopefully will bring this crisis under control. But for now, studying the points of conflict is key to understanding the political implications of the crisis, and perhaps could illustrate where to start in fixing it.<br/><br/></p>
+<!--        <p><img src="images/legend.png" alt="legend"></p>-->
+        <h2><strong>ABOUT THIS MAP</strong></h2>
+        <p>This map explores the intersection of water issues and political unrest. Each point is a water-related conflict event such as a protest, riot, or an instance of intercommunal strife. Hover over the events for details on each conflict.<br/><br/></p>
+<!--        <p><img src="images/legend.png" alt="legend"></p>-->
+        <p>Move the slider to select a timeframe of interest. Once a duration is selected, the slider can be moved as a unit to compare the same duration at different points on the timeline. Doing so reveals that instances of water related conflict are increasing.<br/><br/></p>
+        <h2><strong>ABOUT THE DATA</strong></h2>
+        <p>The conflict event data is drawn from the <cite>Armed Conflict Location and Event (ACLED) Asia</cite> dataset. The asia is only 1.5 years old, and I look forward to updating this map as the data grows.<br/><br/></p>
+        <p>The water data reflects the Overall Water Risk categories from the World Resources Institute's <cite>AQUEDUCT Water Risk Atlas</cite>.<br/><br/></p>
+    </div>
+    <div id='legend'>	
+        <div class="bullet" style="background: #F11810"> EXTREMELY HIGH<br/>WATER RISK </div>
+		<div class="bullet" style="background: #FF5C00"> HIGH<br/>WATER RISK </div> 
+		<div class="bullet" style="background: #FF9900"> MEDIUM TO HIGH<br/> WATER RISK </div>
+        <div class="bullet" style="background: #FFCC00"> LOW TO MEDIUM <br/>WATER RISK </div>
+	
+    </div>
+    <div id="ui-slider">
+<!--         <input type="range" min="January 2015", max="Current", value="1", step="1" class="slider">-->
+    </div>
+    <div id="event-start">January 2015</div>
+    <div id="event-end">May 15, 2016</div>
+<!--    <div id='year'><b>Month, Year: </b><span>January 2015</span></div>-->
+    <div id="info">
+        <h2>Date<br/><span></span></h2>
+        <h2 class = 'location'>City/Village<br/><span></span></h2>
+        <h2 class = 'state'>State<br/><span></span></h2>
+        <h2 class = 'gdp'>GDP Growth 2014<br/><span></span>%</h2>
+        <p class="notes"><span></span></p>
+    </div>
+    
+    <script>
+        L.mapbox.accessToken = 'pk.eyJ1Ijoicmdkb25vaHVlIiwiYSI6Im5Ua3F4UzgifQ.PClcVzU5OUj17kuxqsY_Dg';
+        var map = L.mapbox.map('map', 'mapbox.satellite', {
+            center: [21.14, 85.08],
+            zoom: 5,
+            minZoom: 5,
+            maxZoom: 8,
+            maxBounds: L.latLngBounds([39, 65],[0, 110])
+        });
+        
+        var NASAGIBS_ViirsEarthAtNight2012 = L.tileLayer('http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
+            attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov">ESDIS</a>) with funding provided by NASA/HQ.',
+            bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
+            minZoom: 1,
+            maxZoom: 8,
+            format: 'jpg',
+            opacity: .75,
+            time: '',
+            tilematrixset: 'GoogleMapsCompatible_Level'
+        }).addTo(map);
+    
+        
+        
+        
+        var dateValues = [
+                document.getElementById('event-start'),
+                document.getElementById('event-end')
+            ];
+        
+        var
+            weekdays = [
+                "Sunday", "Monday", "Tuesday",
+                "Wednesday", "Thursday", "Friday",
+                "Saturday"
+            ],
+            months = [
+                "January", "February", "March",
+                "April", "May", "June", "July",
+                "August", "September", "October",
+                "November", "December"
+            ];
+        
+//        var stateGDP = {};
+
+        var data = {};
+	   
+        $.when(
+
+            $.getJSON("https://nilslewis.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT * FROM indiawater", function(waterData) {
+                
+                data.waterData = waterData;
+                
+            }),
+            $.getJSON("https://nilslewis.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT * FROM acled_india_water", function(eventData) {
+                
+                data.eventData = eventData;
+                
+            }), 
+            $.getJSON('https://nilslewis.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT * FROM india_states', function(statesData) {
+                
+                data.statesData = statesData;
+            })
+        ).then(function(h) {
+            
+            sequenceUI()
+            
+            drawMap(data.waterData, data.eventData, data.statesData);
+            
+        })
+             
+         
+        function getColor(d) {
+            return d == "Extremely high risk (4-5)" ? '#F11810' :
+                   d == "High risk (3-4)" ? '#FF5C00' :
+                   d == "Medium to high risk (2-3)" ? '#FF9900' :
+                   d == "Low to medium risk (1-2)" ? '#FFCC00' :
+                    '#FFEDA0';
+        }
+        
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties['owr_cat']),
+                weight: .3,
+                opacity: .8,
+                color: getColor(feature.properties['owr_cat']),
+                fillOpacity: 0.6
+            };
+        }
+
+        
+        function drawMap(waterData, acledData, geoData) {
+            
+            
+            
+            var water = L.geoJson(waterData, {style: style}).addTo(map);
+            
+            var states = L.geoJson(geoData, {
+                 style: function(feature) {
+                    return {
+                            weight: .5,
+                            fillOpacity: 0,
+                        };
+                }                
+            }).addTo(map);
+            
+         
+            
+            var events = L.geoJson(acledData, {
+                pointToLayer: function(feature, layer){
+                    
+                    
+                        return L.circleMarker(layer, {
+                            radius: 6,
+                            color: 'whitesmoke',
+                            opacity: 1,
+                            weight: 1.5,
+                            fillOpacity: 1,
+                            fillColor: '#3E7BB6',
+                            attribution: "ACLED Asia"
+                        });
+                    
+
+                }
+            }).addTo(map);
+            
+//            var CartoDB_PositronOnlyLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+//	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+//	subdomains: 'abcd',
+//	maxZoom: 19
+//}).addTo(map).bringToFront;
+
+            
+            // when mouseover circle
+            events.on('mouseover', function(e) {
+                
+                //get props
+                var props = e.layer.feature.properties;
+//                console.log(props);
+                
+                // loop through states
+                states.eachLayer(function(layer) {
+                    
+//                    stateGDP = [layer.feature.properties.st_name, layer.feature.properties._2013_14_growth]
+//                    console.log(stateGDP);
+                    
+//                    console.log(layer.feature.properties);
+                    
+                    // compare names circle and state
+                    // if same, change the style of the state
+                    if(props.admin1 == layer.feature.properties.st_name) {
+                        
+                        layer.setStyle( { 
+                            weight: 1, 
+                            color: 'whitesmoke', 
+                            fillOpacity: .3,
+                            } );
+                    }
+                    
+                    
+                
+                });
+                
+            });
+            
+             //revert states back to hidden
+            events.on('mouseout', function(layer) {
+                
+                 states.eachLayer(function(layer) {
+                    layer.setStyle( { weight: .2, fillOpacity: 0 } );  
+                 });
+                
+            });
+            
+            dateSlider.noUiSlider.on('update', function( values, handle ) {
+                dateValues[handle].innerHTML = formatDate(new Date(+values[handle]));
+                updateMap(events);
+            });
+            
+            infoWindow(events);
+            
+//            
+        }
+        
+        function updateMap(events) {
+            //updates the points to hide those outside timeframe
+            
+            events.eachLayer(function(layer) {
+                
+                var sliderVal = dateSlider.noUiSlider.get();
+//                console.log(sliderVal);
+                var min = Number(sliderVal[0]);
+                var max = Number(sliderVal[1]);
+//                console.log(min, max);
+                var time = timestamp(layer.feature.properties.event_date);
+//                console.log(time);
+            
+                if(time < min || time > max) {
+
+                    layer.setStyle({ fill: false, stroke: false })
+
+                        } else {
+                            layer.setStyle({ fill: true, stroke: true })
+                        }
+                        
+            })
+        }
+        
+        
+        function sequenceUI() {
+            
+            //slider functionality
+            
+            dateSlider = document.getElementById('ui-slider');
+            
+            noUiSlider.create(dateSlider, {
+            // Create two timestamps to define a range.
+                range: {
+                    min: timestamp('January 2015'),
+                    max: timestamp('May 2016')
+                },
+                connect: true,
+                behaviour: 'drag',
+
+            // Steps of one week
+                step: 30.4 * 24 * 60 * 60 * 1000,
+
+            // Two more timestamps indicate the handle starting positions.
+                start: [ timestamp('January 2015'), timestamp('May 2016') ],
+
+            // No decimals
+//                format: wNumb({
+//                    decimals: 0
+//                })
+            });
+            
+            
+        };
+        
+        
+        
+        
+        // Append a suffix to dates.
+        // Example: 23 => 23rd, 1 => 1st.
+        function nth (d) {
+          if(d>3 && d<21) return 'th';
+          switch (d % 10) {
+                case 1:  return "st";
+                case 2:  return "nd";
+                case 3:  return "rd";
+                default: return "th";
+            }
+        }
+
+        // Create a string representation of the date.
+        function formatDate ( date ) {
+            return weekdays[date.getDay()] + ", " +
+                date.getDate() + nth(date.getDate()) + " " +
+                months[date.getMonth()] + " " +
+                date.getFullYear();
+        }
+        
+        function timestamp(str){
+            return new Date(str).getTime();   
+        }
+        
+
+        function infoWindow(events) {
+            
+            var info = $('#info');
+            events.on('mouseover', function(e) {
+
+                var props = e.layer.feature.properties;
+//                console.log(stateGDP);
+                    info.show();
+                    
+                    date = formatDate(new Date(props.event_date));
+
+                    $('#info span').text(date);
+                    $(".notes span:first-child").text(String(props.notes));
+                    $('.state span').text(props.admin1);
+                    $('.location span').text(props.location);
+                    $('.gdp span').text(props.growth2014);                    
+                    
+                    e.layer.setStyle({ stroke: true, color: 'yellow' });
+                });
+            
+                
+            events.on('mouseout', function(e) {
+                info.hide();
+            
+                //change color for affordance that point has already been viewed
+                e.layer.setStyle({ stroke: false, color: 'whitesmoke'});
+            });  
+            $(document).mousemove(function(e){
+                // offset from mouse position
+                info.css({"left": e.pageX + 6, "top": e.pageY - info.height() - 15}); 
+                // switch right in crash
+                if(info.offset().top < 4) {
+                    info.css({"top": e.pageY + 15});
+                }
+                // switch left in crash
+                if(info.offset().left + info.width() >= $(document).width() - 40) {
+                    info.css({"left": e.pageX - info.width() - 30});
+                }
+            });
+        
+    }
+        
+        
+        
+    </script>
+</body>
+</html>
