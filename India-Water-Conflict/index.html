@@ -9,6 +9,7 @@
     <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script> 
     <script src="libs/noUiSlider.8.5.1/nouislider.min.js"></script>
     <script src="libs/jquery.sparkline.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     
     <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
     <link href='libs/noUiSlider.8.5.1/nouislider.min.css' rel='stylesheet' />
@@ -43,6 +44,17 @@
             color: whitesmoke;
             background: #00233D;
         }
+        text {
+            text-align: center;
+        }
+        #header {
+            color: #850000;
+            background: whitesmoke;
+            top: 0;
+            height: 40px;
+            width: 100%;
+            text-align: center
+        }
         #map {
           position:absolute;
           top:0;
@@ -51,15 +63,22 @@
           width: 100%;
         }
         #ui-slider {
-            width: 500px;
+            width: 30%;
             position: absolute;
-            right:  50%;
-            bottom: 80px;
+            left:  45%;
+            bottom: 65px;
+        }
+        #chart {
+            width: 30%;
+            position: absolute;
+            left:  45%;
+            bottom: -60px;
         }
         #spark {
             position: absolute;
 /*            right:  50%;*/
             bottom: 30px;
+            width: 100%
         }
         #event-start{
             width: 50%;
@@ -76,59 +95,96 @@
             top: 32px;
             text-align: right
         }
+        #cities {
+            position: absolute;
+            align-items: center;
+            top: 0;
+            color: whitesmoke;
+            left: 25%;
+            width: 92px;
+            opacity: .75;
+            font-size: .85em;
+            background: #00233D;
+            padding: 2px 6px;
+            border-left: 3px solid darkgray;
+            max-height: 99.5%;
+            border-right: 3px solid darkgray;
+            overflow-y: hidden;
+        }
         #legend {
             position: absolute;
             align-items: center;
-            bottom: 25px;
+            top: 25px;
             border-radius: 5px; 
             color: white;
-            right: 25.5%;
+            right: 15px;
             width: 10%;
-            opacity: .75
+            opacity: .75;
+            border-radius: 5px;
+            outline-color: whitesmoke;
+            outline-width: 1px;
             
         }
         #legend h3 {
             text-align: right;
-            font-weight: 500;
+/*            font-weight: 500;*/
             color: whitesmoke;
-            border-radius: 5px;
         }
+/*
         #info {
             padding: 8px 15ps;
             position: absolute;
             text-align: center;
-            max-width: 300px;
+            max-width: 225px;
+            bottom: 20%;
             right: 15px;
-            top: 15px;
             display: none;
             background: whitesmoke;
             border: 1px #d3d3d3;
             padding: 2px 6px;
             border-radius: 5px;
-            opacity: .75;
+            opacity: .9;
+        }
+*/
+        #info {
+            padding: 8px 15ps;
+            position: absolute;
+            text-align: center;
+            max-width: 225px;
+            bottom: 20%;
+            right: 15px;
+            display: none;
+            background: #00233D;
+            border: 1px #d3d3d3;
+            padding: 2px 6px;
+            border-radius: 5px;
+            opacity: .7;
         }
         #info p {
             margin: 3px 0 4px;
-            font-size: .7em;
-            text-shadow: 1px 1px grey;
+            font-size: .75em;
+/*            text-shadow: 1px 1px grey;*/
+        }
+        #info h2 {
+            background: #00233D;    
+            color: whitesmoke;
         }
         #info span:last-child {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: 500;
-            color: #191B28;
+            color: whitesmoke;
         }
         .bullet {
-            border-radius: 5px;
             height: 5%;
             text-align: center;
             font-weight: bold;
-            text-shadow: 2px 2px black;
         }
         .noUi-connect {
             background: #00233D
         }
         .noUi-handle {
             background: #00233D;
+            background-size: contain;
         }
         .noUi-background {
             background: #BDBDBD;
@@ -136,14 +192,14 @@
         }
         #side-panel {
             position: absolute;
-            right: 0;
+            left: 0;
             top: 0;
             bottom: 0;
             width: 25%;
             color: whitesmoke;
             background: #00233D;
-            border-left: 3px solid whitesmoke;
-            overflow-y: scroll;
+            border-right: 3px solid darkgray;
+            overflow-y: auto;
             opacity: .8
         }
         #side-panel p {
@@ -151,7 +207,7 @@
             padding: 0 25px 0 15px;
             color: whitesmoke;
             text-align: left;
-            font-size: 1em;
+            font-size: .95em;
         }
         #side-panel p:after {
             content: '';
@@ -162,49 +218,83 @@
             float: right;
             margin: 0 0 15px 15px;
             width: 90%;
-        }        
+        }
+        a, a:visited {   
+        text-decoration: none;
+        font-weight: bold;
+        color: #850000;
+        text-decoration: underline;
+        }
+        a:hover {
+            text-decoration: none;
+            color: #00233D;
+
+            
+        }
     </style>
 </head>
 <body>
 
     <div id='map'></div>
+    <div id='header'></div>
     <div id='side-panel'>
-        <h1>Water &amp; Politics in India</h1>
-        <h2><strong>CONFLICT DATA OVER WATER SCARCITY 2015-2016</strong></h2>
+        <h1>Dividing Water</h1>
+        <h2><strong>PROTESTS, RIOTS &amp; WATER CONFLICT IN INDIA<br/></strong> Map created by <strong>Nils Lewis: </strong><a target = '_blank' href="http://black-tulip.github.io">Portfolio</a> | <a target = '_blank' href="https://github.com/black-tulip">Github</a></b></h2>
         
-        <p>Two weak monsoons and the ever increasing H20 demands of a vibrant developing economy have left India facing it's most severe water crisis in recent memory. According the <cite>The Economist</cite> 330 million people are facing acute water shortages. That is a number equal to the entire population of the United States.<br/><br/></p>
-        <p>The impact ranges from local governments unable to provide potable water to power plants forced to shut down because the rivers that provide cooling are no longer flowing. As this critical resource dries up, increased competition breeds conflict between residents, farmers, industry, local governments, and other communities.<br/><br/></p>
+        <p>Two weak monsoons and the ever increasing H20 demands of a vibrant developing economy have left India facing it's most severe water crisis in recent memory. According the <cite>The Economist</cite> 330 million people are facing acute water shortages. That is a number equal to the entire population of the United States.<br/></p>
+        <p>The impact ranges from local governments unable to provide potable water to power plants forced to shut down because the rivers that provide cooling are no longer flowing. As this critical resource dries up, increased competition breeds conflict between residents, farmers, industry, local governments, and other communities. <strong>Instances of water related conflict are increasing.</strong><br/></p>
         <p>Water is a renewable resource, so proper water management policies can and hopefully will bring this crisis under control. But for now, studying the points of conflict is key to understanding the political implications of the crisis, and perhaps could illustrate where to start in fixing it.<br/><br/></p>
-<!--        <p><img src="images/legend.png" alt="legend"></p>-->
-        <h2><strong>ABOUT THIS MAP</strong></h2>
-        <p>This map explores the intersection of water issues and political unrest. Each point is a water-related conflict event such as a protest, riot, or an instance of intercommunal strife. Hover over the events for details on each conflict.<br/><br/></p>
-<!--        <p><img src="images/legend.png" alt="legend"></p>-->
-        <p>Move the slider to select a timeframe of interest. Once a duration is selected, the slider can be moved as a unit to compare the same duration at different points on the timeline. Doing so reveals that instances of water related conflict are increasing.<br/><br/></p>
-        <h2><strong>ABOUT THE DATA</strong></h2>
-        <p>The conflict event data is drawn from the <cite>Armed Conflict Location and Event (ACLED) Asia</cite> dataset. The asia is only 1.5 years old, and I look forward to updating this map as the data grows.<br/><br/></p>
+        <h2><strong>THE MAP</strong></h2>
+        <p>This map explores the intersection of water issues and political unrest. Each point is a water-related conflict event such as a protest, riot, or an instance of intercommunal strife. Hover over the events for details on each conflict.<br/></p>
+        <p>Move the slider to select a timeframe of interest. Once a duration is selected, the slider can be moved as a unit to compare the same duration at different points on the timeline.<br/><br/></p>
+        <h2><strong>THE DATA</strong></h2>
+        <p>The conflict event data is drawn from the <cite> Armed Conflict Location and Event (ACLED) Asia</a></cite> dataset.<br/><br/></p>
         <p>The water data reflects the Overall Water Risk categories from the World Resources Institute's <cite>AQUEDUCT Water Risk Atlas</cite>.<br/><br/></p>
     </div>
+<div id='cities'><text class = 'count' align='center'><strong><span></span> CITIES IMPACTED:</strong></text><marquee scrollamount="10" direction='up' height='100%'><span></span></marquee></div>
     <div id='legend'>	
-        <div class="bullet" style="background: #F11810"> EXTREMELY HIGH<br/>WATER RISK </div>
-		<div class="bullet" style="background: #FF5C00"> HIGH<br/>WATER RISK </div> 
-		<div class="bullet" style="background: #FF9900"> MEDIUM TO HIGH<br/> WATER RISK </div>
-        <div class="bullet" style="background: #FFCC00"> LOW TO MEDIUM <br/>WATER RISK </div>
+        <div class="bullet" style="background: #00233D">WATER RISK</div>
+        <div class="bullet" style="background: #F11810"> Extremely High</div>
+		<div class="bullet" style="background: #FF5C00"> High</div> 
+		<div class="bullet" style="background: #FF9900"> Medium to High</div>
+        <div class="bullet" style="background: #FFCC00"> Low to medium</div>
 	
     </div>
-    	
+    <div id='chart'>
+            <svg width ="101%" alignment='center'>
+                <rect x="0"></rect>
+                <rect x="5.8%"></rect>
+                <rect x="11.6%"></rect>
+                <rect x="17.4%"></rect>
+                <rect x="23.2%"></rect>
+                <rect x="29%"></rect>
+                <rect x="34.8%"></rect>
+                <rect x="40.6%"></rect>
+                <rect x="46.4%"></rect>
+                <rect x="52.2%"></rect>
+                <rect x="58%"></rect>
+                <rect x="63.8%"></rect>
+                <rect x="69.6%"></rect>
+                <rect x="75.4%"></rect>
+                <rect x="81.2%"></rect>
+                <rect x="87%"></rect>
+                <rect x="92.8%"></rect>
+             </svg>
+        </div>
     <div id="ui-slider">
 <!--         <input type="range" min="January 2015", max="Current", value="1", step="1" class="slider">-->
-        <div id='spark'></div>
+<!--        <div id='spark'></div>-->
+        
         <div id="event-start">January 2015</div>
         <div id="event-end">May 15, 2016</div>
     </div>
     
 <!--    <div id='year'><b>Month, Year: </b><span>January 2015</span></div>-->
     <div id="info">
-        <h2>Date<br/><span></span></h2>
-        <h2 class = 'location'>City/Village<br/><span></span></h2>
-        <h2 class = 'state'>State<br/><span></span></h2>
-        <h2 class = 'gdp'>GDP Growth 2014<br/><span></span>%</h2>
+        <h2><span></span></h2>
+        <h2 class = 'location'><strong>City/Village</strong><br/><span></span></h2>
+        <h2 class = 'state'><strong>State</strong><br/><span></span></h2>
+        <h2 class = 'gdp'><strong>State GDP Growth 2014</strong><br/><span></span>%</h2>
         <p class="notes"><span></span></p>
     </div>
     
@@ -213,18 +303,19 @@
         //add basemap
         L.mapbox.accessToken = 'pk.eyJ1Ijoicmdkb25vaHVlIiwiYSI6Im5Ua3F4UzgifQ.PClcVzU5OUj17kuxqsY_Dg';
         var map = L.mapbox.map('map', 'mapbox.satellite', {
-            center: [21.14, 85.08],
-            zoom: 5,
-            minZoom: 5,
+            center: [28.14, 85.08],
+            zoom: 4,
+            zoomControl: false,
+            minZoom: 4,
             maxZoom: 8,
-            maxBounds: L.latLngBounds([5, 70],[35, 110]),
+            maxBounds: L.latLngBounds([5, 25],[35, 115]),
             
         });
         
         //add medium opacity light map
         var NASAGIBS_ViirsEarthAtNight2012 = L.tileLayer('http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
             attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov">ESDIS</a>) with funding provided by NASA/HQ.',
-            bounds: [[80, 30],[0, 120]],
+            bounds: [[80, 30],[0, 150]],
             minZoom: 1,
             maxZoom: 8,
             format: 'jpg',
@@ -232,8 +323,9 @@
             time: '',
             tilematrixset: 'GoogleMapsCompatible_Level'
         }).addTo(map);
-    
         
+        L.control.scale({position: 'bottomright'}).addTo(map);
+    
         
         //create values for slider. 
         var dateValues = [
@@ -255,7 +347,8 @@
                 "November", "December"
             ];
         
-//        var stateGDP = {};
+        //create cities variable for loading the cities ticker. 
+        var cities = [];
 
         var data = {};
 	   
@@ -283,20 +376,33 @@
             
             //fire the function to draw the data to the map
             drawMap(data.waterData, data.eventData, data.statesData);
-            
-            
-            // Values to render
-		
-            
+                     
         })
-             
-        var monthValues = [3,3,7,5,4,3,2,0,4,14,10,12,4,11,15,16];
+        
+            var ratData = [3,3,7,5,4,3,2,0,4,14,10,12,4,11,15,16,21];
+
+            var svg = d3.select('#chart')
+                        .append( 'svg')
+            
+
+            d3.selectAll( "rect" )
+                  .data( ratData )
+                  .attr('fill', '#6B0000')
+                  .attr('width', '5.5%')
+                  .attr( "height", function(d){
+                    return d/10 * 20;
+                  })
+                  .attr( "y", function(d){
+                    return 150-d/10 * 20;
+                  });
+        
+        // create sparkline bar graph with monthly summed event data. 
+        var monthValues = [3,3,7,5,4,3,2,0,4,14,10,12,4,11,15,16,21];
 		
 						// Draw a sparkline for the #sparkline element
 						$('#spark').sparkline(monthValues, {
 							type: "bar",
-							barWidth: 30,
-                            barColor: '#BDBDBD',
+                            barColor: '#6B0000',
                             barOpacity: .6,
 							height: '55px',
                             tooltipFormat: '{{offset:offset}} {{value}}',
@@ -317,7 +423,8 @@
                                     12: 'Jan 2016:',
                                     13: 'Feb 2016:',
                                     14: 'Mar 2016:',
-                                    15: 'Apr 2016:'
+                                    15: 'Apr 2016:',
+                                    16: 'May 2016:'
                                     
                                 }
                             },
@@ -340,7 +447,7 @@
                 weight: .3,
                 opacity: .8,
                 color: getColor(feature.properties['owr_cat']),
-                fillOpacity: 0.6
+                fillOpacity: 0.55
             };
         }
 
@@ -354,8 +461,9 @@
             var states = L.geoJson(geoData, {
                  style: function(feature) {
                     return {
-                            weight: .5,
+                            weight: .8,
                             fillOpacity: 0,
+                            color: 'whitesmoke'
                         };
                 }                
             }).addTo(map);
@@ -367,86 +475,59 @@
                     
                     
                         return L.circleMarker(layer, {
-                            radius: 6,
+                            radius: 5,
                             color: 'whitesmoke',
                             opacity: 1,
-                            weight: 1.5,
+                            weight: 2,
                             fillOpacity: 1,
                             fillColor: '#3E7BB6',
                             attribution: "ACLED Asia"
                         });
-                    
-
                 }
+                
             }).addTo(map);
             
         
-//            var CartoDB_PositronOnlyLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-//	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-//	subdomains: 'abcd',
-//	maxZoom: 19
-//}).addTo(map).bringToFront;
-
-            
-            // when mouseover circle
+            // when mouseover circle increase radius.
             events.on('mouseover', function(e) {
                 
-                //get props
-                var props = e.layer.feature.properties;
-//                console.log(props);
-                
-                
-                
-                // loop through states
-                states.eachLayer(function(layer) {
-                    
-//                    stateGDP = [layer.feature.properties.st_name, layer.feature.properties._2013_14_growth]
-//                    console.log(stateGDP);
-                    
-//                    console.log(layer.feature.properties);
-                    
-                    // compare names circle and state
-                    // if same, change the style of the state
-                    if(props.admin1 == layer.feature.properties.st_name) {
-                        
-                        layer.setStyle( { 
-                            weight: 1, 
-                            color: 'whitesmoke', 
-                            fillOpacity: .3,
-                            } );
-                    }
-                    
-                    
-                
-                });
+                e.layer.setStyle({ radius: 9, stroke: true })
                 
             });
             
-             //revert states back to hidden
+             //set style to indicate viewed, and reorder layers to expose new data. 
             events.on('mouseout', function(e) {
                 
-//                layer.toBack();
-                e.layer.setStyle({ stroke: false, color: 'whitesmoke'});
+
+                e.layer.setStyle({weight: 3, color: '#3E7BB6', radius: 7, fillColor: 'whitesmoke', fillOpacity: .8}).bringToBack();
                  
                 states.eachLayer(function(layer) {
-                    layer.setStyle( { weight: .5, fillOpacity: 0 } );  
+                    layer.bringToBack();
                  });
+                
+                water.eachLayer(function(layer) {
+                    layer.bringToBack();
+                 }); 
                 
             });
             
             dateSlider.noUiSlider.on('update', function( values, handle ) {
                 dateValues[handle].innerHTML = formatDate(new Date(+values[handle]));
                 updateMap(events);
+                
             });
             
             infoWindow(events);
-            
-//            
+            map.fitWorld().zoomIn();
         }
         
+        //updates the map when slider is dragged. 
+        
         function updateMap(events) {
-            //updates the points to hide those outside timeframe
             
+            cities = [];
+            
+            //updates the points to hide those outside timeframe
             events.eachLayer(function(layer) {
                 
                 var sliderVal = dateSlider.noUiSlider.get();
@@ -456,22 +537,45 @@
 //                console.log(min, max);
                 var time = timestamp(layer.feature.properties.event_date);
 //                console.log(time);
-            
+                
+                
+                
                 if(time < min || time > max) {
 
-                    layer.setStyle({ fill: false, stroke: false })
+                    layer.setStyle({weight: 2, fill: false, stroke: false, radius: 5, fillColor: '#3E7BB6', color: 'whitesmoke', fillOpacity: .9})
                 
                         } else {
-                            layer.setStyle({ fill: true, stroke: true })
+                            layer.setStyle({ fill: true, stroke:true })
+                            
+                            cities.push(" " + (layer.feature.properties.location));
+                            
                         }
-                        
-            })
+                   
+                      
+                    })
+            
+            //removes duplicate values from cities list. 
+
+            var uniqueVals = [];
+            $.each(cities, function(i, el){
+                if($.inArray(el, uniqueVals) === -1) uniqueVals.push(el);
+            });
+            
+            uniqueVals.sort();
+            
+            count = uniqueVals.length;
+            
+            //loads cities and count onto ticker. 
+            $('#cities span').text(uniqueVals);
+            $('.count span').text(count);
+
+        
         }
         
-        
+        //slider functionality
         function sequenceUI() {
             
-            //slider functionality
+            
             
             dateSlider = document.getElementById('ui-slider');
             
@@ -479,7 +583,7 @@
             // Create two timestamps to define a range.
                 range: {
                     min: timestamp('January 2015'),
-                    max: timestamp('May 2016')
+                    max: timestamp('June 2016')
                 },
                 connect: true,
                 behaviour: 'drag',
@@ -488,18 +592,12 @@
                 step: 30.4 * 24 * 60 * 60 * 1000,
 
             // Two more timestamps indicate the handle starting positions.
-                start: [ timestamp('January 2015'), timestamp('May 2016') ],
+                start: [ timestamp('January 2015'), timestamp('June 2016') ],
 
-            // No decimals
-//                format: wNumb({
-//                    decimals: 0
-//                })
             });
             
             
         };
-        
-        
         
         
         // Append a suffix to dates.
@@ -516,24 +614,25 @@
 
         // Create a string representation of the date.
         function formatDate ( date ) {
-            return weekdays[date.getDay()] + ", " +
-                date.getDate() + nth(date.getDate()) + " " +
-                months[date.getMonth()] + " " +
-                date.getFullYear();
+            return months[date.getMonth()] + " " + date.getDate() + nth(date.getDate()) + " " +
+            date.getFullYear();
         }
+        
         
         function timestamp(str){
             return new Date(str).getTime();   
         }
         
-
+        
+        //manages presentation of info window when hovering over event. 
+        
         function infoWindow(events) {
             
             var info = $('#info');
             events.on('mouseover', function(e) {
 
                 var props = e.layer.feature.properties;
-//                console.log(stateGDP);
+
                     info.show();
                     
                     date = formatDate(new Date(props.event_date));
@@ -544,30 +643,13 @@
                     $('.location span').text(props.location);
                     $('.gdp span').text(props.growth2014);                    
                     
-//                    e.layer.setStyle({ stroke: true, color: 'yellow' });
                 });
             
                 
             events.on('mouseout', function(e) {
                 info.hide();
-            
-                //change color for affordance that point has already been viewed
-//                e.layer.setStyle({ stroke: false, color: 'whitesmoke'});
-//                e.layer.toBack();
             });  
-            $(document).mousemove(function(e){
-                // offset from mouse position
-                info.css({"left": e.pageX + 6, "top": e.pageY - info.height() - 15}); 
-                // switch right in crash
-                if(info.offset().top < 4) {
-                    info.css({"top": e.pageY + 15});
-                }
-                // switch left in crash
-                if(info.offset().left + info.width() >= $(document).width() - 40) {
-                    info.css({"left": e.pageX - info.width() - 30});
-                }
-            });
-        
+
     }
         
         
