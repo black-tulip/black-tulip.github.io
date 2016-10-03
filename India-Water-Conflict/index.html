@@ -61,12 +61,13 @@
           bottom:0;
           left:0;
           width: 100%;
+            height: 100%;
         }
         #ui-slider {
             width: 30%;
             position: absolute;
             left:  45%;
-            bottom: 65px;
+            bottom: 80px;
         }
         #chart {
             width: 30%;
@@ -114,7 +115,7 @@
         #legend {
             position: absolute;
             align-items: center;
-            top: 25px;
+            top: 45px;
             border-radius: 5px; 
             color: white;
             right: 15px;
@@ -304,7 +305,7 @@
         L.mapbox.accessToken = 'pk.eyJ1Ijoicmdkb25vaHVlIiwiYSI6Im5Ua3F4UzgifQ.PClcVzU5OUj17kuxqsY_Dg';
         var map = L.mapbox.map('map', 'mapbox.satellite', {
             center: [28.14, 85.08],
-            zoom: 4,
+            zoom: 5,
             zoomControl: false,
             minZoom: 4,
             maxZoom: 8,
